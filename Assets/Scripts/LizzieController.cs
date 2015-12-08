@@ -38,6 +38,7 @@ public class LizzieController : MonoBehaviour {
             // cause the tower to move in the oposite direction
             this.rbody.velocity += -(normalized * tipStrength * speedScalar);
         }
+        Debug.Log(rbody.velocity);
         transform.Translate(rbody.velocity * Time.deltaTime);
 	}
 }
