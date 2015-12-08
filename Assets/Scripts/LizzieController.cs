@@ -36,8 +36,8 @@ public class LizzieController : MonoBehaviour {
             newBullet.GetComponent<Rigidbody>().AddForce((normalized * bulletSpeed) * speedScalar, ForceMode.Impulse);
 
             // cause the tower to move in the oposite direction
-            this.rbody.velocity += normalized * tipStrength * speedScalar;
-
+            this.rbody.velocity += -(normalized * tipStrength * speedScalar);
         }
+        transform.Translate(rbody.velocity * Time.deltaTime);
 	}
 }
