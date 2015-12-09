@@ -5,8 +5,9 @@ public class RamAI : MonoBehaviour
 {
     public Rigidbody Target;
     public float Speed;
-    public float Jump_Power;
+    public float Max_Jump_Power;
     public float Damage;
+    public float Min_Jump_Dist;
 
     private Rigidbody ai_Ram;
     private Vector3 ai_TargetPos;
@@ -14,6 +15,8 @@ public class RamAI : MonoBehaviour
     private float ai_xVel;
     private float ai_zVel;
     private float ai_yVel;
+    private float ai_hVel; //Horizontal Velocity
+    private float ai_LastDist;
     private bool ai_CanJump;
     private bool ai_HasJumped;
 
@@ -53,20 +56,28 @@ public class RamAI : MonoBehaviour
 
     float ai_GetJumpVel()
     {
-        //Determines distance between the rammer and Lizzie
+        //Determines distance between the rammer and Lizzie using the X and Z Axies
         float dist = Mathf.Sqrt(Mathf.Pow(ai_Position.x - ai_TargetPos.x, 2) + Mathf.Pow(ai_Position.z - ai_TargetPos.z, 2));
 
-        if (dist <= Jump_Power / 5 && ai_CanJump)
+        if(ai_HasJumped)
+        {
+            return -(ai_hVel);
+        }
+
+        if (dist <= Min_Jump_Dist && ai_CanJump)
         {
             if(ai_xVel != 0 || ai_zVel != 0)
             {
-                ai_HasJumped = true;
-                return Jump_Power;
+                if (ai_LastDist < dist)
+                {
+                    ai_HasJumped = true;
+                    ai_CanJump = false;
+                }
+
+                ai_LastDist = dist;
+
+                return ai_hVel + 10; //10 is minimum to resist gravity, thus, I add it automatically.
             }
-        }
-        else if(dist > Jump_Power / 5 && ai_HasJumped)
-        {
-            ai_CanJump = false;
         }
 
         return 0.0f;
@@ -87,12 +98,18 @@ public class RamAI : MonoBehaviour
             ai_xVel = Speed * ai_GetDirection(false);
             ai_zVel = Speed * ai_GetDirection(true);
         }
+
         ai_yVel = ai_GetJumpVel();
+        ai_hVel = Mathf.Sqrt(Mathf.Pow(ai_Ram.velocity.x, 2) + Mathf.Pow(ai_Ram.velocity.z, 2));
+
+        if(ai_hVel > Max_Jump_Power) { ai_hVel = Max_Jump_Power; }
     }
 
     void Start ()
     {
         ai_CanJump = true;
+        ai_HasJumped = false;
+        ai_LastDist = Min_Jump_Dist + 1;
         ai_Ram = GetComponent<Rigidbody>();
         ai_Update();
     }
@@ -116,6 +133,7 @@ public class RamAI : MonoBehaviour
         {
             ai_CanJump = true;
             ai_HasJumped = false;
+            ai_LastDist = Min_Jump_Dist + 1;
         }
     }
 }
