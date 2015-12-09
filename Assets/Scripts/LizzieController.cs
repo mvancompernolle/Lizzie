@@ -10,22 +10,27 @@ public class LizzieController : MonoBehaviour {
     public float maxMovementSpeed;
     public float maxTiltAngle;
     public float bulletOffset = 5.0f;
-    public Vector3 vel;
+    public Vector3 vel, prevVel, goalVel;
+    private float animationTime;
+    private float currAnimationTime = 0.0f;
 
 	// Use this for initialization
 	void Start () {
-        vel = new Vector3(0.0f, 0.0f, 0.0f);
+        vel = prevVel = goalVel = new Vector3(0.0f, 0.0f, 0.0f);
 	}
 
-    public void applyHit(float percentTilt, Vector3 direction)
+    public void applyHit(float percentTilt, Vector3 direction, float snapTime = 0.1f)
     {
         // set the new velocity
-        vel += direction * percentTilt * maxMovementSpeed;
-        float newSpeed = Vector3.Magnitude(vel);
-        Vector3 normVel = Vector3.Normalize(vel);
+        prevVel = vel;
+        currAnimationTime = 0.0f;
+        animationTime = snapTime;
+        goalVel += direction * percentTilt * maxMovementSpeed;
+        float newSpeed = Vector3.Magnitude(goalVel);
+        Vector3 normVel = Vector3.Normalize(goalVel);
         if (newSpeed > maxMovementSpeed)
         {
-            vel = normVel * maxMovementSpeed;
+            goalVel = normVel * maxMovementSpeed;
         }
     }
 
@@ -96,7 +101,20 @@ public class LizzieController : MonoBehaviour {
             newBullet.GetComponent<Rigidbody>().AddForce((Vector3.Normalize(shootDirectionAngled) * bulletSpeed) * speedScalar + vel, ForceMode.Impulse);
 
             // cause the tower to move in the oposite direction
-            applyHit(tipStrength * speedScalar, -normalized);
+            applyHit(tipStrength * speedScalar, -normalized, 0.1f);
+        }
+        if (vel != goalVel && currAnimationTime < animationTime)
+        {
+            currAnimationTime += Time.deltaTime;        // hotdog
+            if (currAnimationTime >= animationTime)
+            {
+                currAnimationTime = 0.0f;
+                vel = goalVel;
+            }
+            else
+            {
+                vel = Vector3.Lerp(prevVel, goalVel, currAnimationTime / animationTime);
+            }
         }
         transform.Translate(vel * Time.deltaTime, Space.World);
 	}
