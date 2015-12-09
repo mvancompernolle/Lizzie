@@ -76,7 +76,7 @@ public class RamAI : MonoBehaviour
 
                 ai_LastDist = dist;
 
-                return ai_hVel + 10; //10 is minimum to resist gravity, thus, I add it automatically.
+                return (ai_hVel / 2) + 10; //10 is minimum to resist gravity, thus, I add it automatically.
             }
         }
 
