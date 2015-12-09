@@ -4,7 +4,8 @@ using System.Collections;
 public class LizzieController : MonoBehaviour {
     public Rigidbody rbody;
     public GameObject bulletObject;
-    public float speed, bulletSpeed;
+    public Transform bulletSpawnLocation;
+    public float bulletSpeed;
     public float tipStrength;
     public float maxMovementSpeed;
     public float maxTiltAngle;
@@ -35,15 +36,14 @@ public class LizzieController : MonoBehaviour {
         Vector3 normVel = Vector3.Normalize(vel);
         float rotationAngle = maxTiltAngle * (newSpeed / maxMovementSpeed);
         rotationAngle = rotationAngle < maxTiltAngle ? rotationAngle : maxTiltAngle;
-        Debug.Log("Angle: " + rotationAngle);
+        //Debug.Log("Angle: " + rotationAngle);
         Vector3 rotationAxis = Vector3.Cross(Vector3.up, normVel);
-        Debug.Log("Axis: " + rotationAxis);
+        //Debug.Log("Axis: " + rotationAxis);
         float yRotation = Vector3.Angle(Vector3.forward, normVel);
         if (vel.x < 0)
         {
             yRotation = 360.0f - yRotation;
         }
-        Debug.Log(yRotation);
         transform.rotation = Quaternion.identity;
         transform.Rotate(rotationAxis, rotationAngle, Space.World);
         transform.Rotate(Vector3.up, yRotation, Space.Self);
@@ -56,28 +56,47 @@ public class LizzieController : MonoBehaviour {
             // get mouse direction
             float mouseX = Input.mousePosition.x;
             float mouseY = Input.mousePosition.y;
-            Vector3 shootDirection = new Vector3(mouseX, 0.0f, mouseY) - new Vector3(Screen.width/2, 0.0f, Screen.height/2);
+
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(mouseX / Screen.width, mouseY / Screen.height));
+
+            var hits = Physics.RaycastAll(ray);
+            Vector3 target = new Vector3();
+            if (hits.Length > 0)
+            {
+                target = hits[0].point;
+                float dist = hits[0].distance;
+                for (int i = 1; i < hits.Length; ++i)
+                {
+                    if (hits[i].distance > dist)
+                    {
+                        dist = hits[i].distance;
+                        target = hits[i].point;
+                    }
+                }
+            }
+            //Vector3 shootDirection = new Vector3(mouseX, 0.0f, mouseY) - new Vector3(Screen.width/2, 0.0f, Screen.height/2);
+            Vector3 shootDirectionAngled = new Vector3(target.x, 2.0f, target.z) - bulletSpawnLocation.position;
+            Vector3 shootDirection = new Vector3(target.x, 0.0f, target.z) - new Vector3(bulletSpawnLocation.position.x, 0.0f, bulletSpawnLocation.position.z);
+            
             Vector3 normalized = Vector3.Normalize(shootDirection);
 
             // create new bullet and set position
-
             Vector3 position = new Vector3(
                 transform.position.x,
                 transform.position.y + GetComponent<BoxCollider>().bounds.extents.y,
                 transform.position.z);
-            GameObject newBullet = Instantiate(bulletObject, position, transform.rotation) as GameObject;
-            newBullet.transform.position = transform.position + (normalized * bulletOffset);
+            GameObject newBullet = Instantiate(bulletObject, bulletSpawnLocation.position, transform.rotation) as GameObject;
+            newBullet.transform.position = position + (normalized * bulletOffset);
 
             // apply force based on mase location and distance form center
             float distance = Vector3.Magnitude(shootDirection);
             float minLength = Screen.width < Screen.height ? Screen.width / 2.0f : Screen.height / 2.0f;
             float scaleVel = (distance / minLength);
-            float speedScalar = scaleVel < 0.5f ? 0.5f : scaleVel;
-            newBullet.GetComponent<Rigidbody>().AddForce((normalized * bulletSpeed) * speedScalar + vel, ForceMode.Impulse);
+            float speedScalar = scaleVel < 0.3f ? 0.3f : scaleVel;
+            newBullet.GetComponent<Rigidbody>().AddForce((Vector3.Normalize(shootDirectionAngled) * bulletSpeed) * speedScalar + vel, ForceMode.Impulse);
 
             // cause the tower to move in the oposite direction
             applyHit(tipStrength * speedScalar, -normalized);
-            Debug.Log(vel);
         }
         transform.Translate(vel * Time.deltaTime, Space.World);
 	}
