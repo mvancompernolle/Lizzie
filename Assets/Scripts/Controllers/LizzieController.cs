@@ -10,43 +10,61 @@ public class LizzieController : MonoBehaviour {
     public float maxMovementSpeed;
     public float maxTiltAngle;
     public float bulletOffset = 5.0f;
-    public Vector3 vel;
+    public Vector3 vel, prevVel, goalVel;
+    private float animationTime;
+    private float currAnimationTime = 0.0f;
+    bool falling;
 
 	// Use this for initialization
 	void Start () {
-        vel = new Vector3(0.0f, 0.0f, 0.0f);
+        falling = false;
+        vel = prevVel = goalVel = new Vector3(0.0f, 0.0f, 0.0f);
 	}
 
-    public void applyHit(float percentTilt, Vector3 direction)
+    public void applyHit(float percentTilt, Vector3 direction, float snapTime = 0.1f)
     {
-        // set the new velocity
-        vel += direction * percentTilt * maxMovementSpeed;
-        float newSpeed = Vector3.Magnitude(vel);
-        Vector3 normVel = Vector3.Normalize(vel);
-        if (newSpeed > maxMovementSpeed)
+        if (!falling)
         {
-            vel = normVel * maxMovementSpeed;
+            // set the new velocity
+            prevVel = vel;
+            currAnimationTime = 0.0f;
+            animationTime = snapTime;
+            goalVel += direction * percentTilt * maxMovementSpeed;
+            float newSpeed = Vector3.Magnitude(goalVel);
+            Vector3 normVel = Vector3.Normalize(goalVel);
+            if (newSpeed > maxMovementSpeed)
+            {
+                goalVel = normVel * maxMovementSpeed;
+                falling = true;
+                rbody.isKinematic = false;
+                rbody.AddForce(vel * 10, ForceMode.Impulse);
+                rbody.AddTorque(new Vector3(Random.Range(10, 100), Random.Range(10, 100), Random.Range(10, 100)), ForceMode.Impulse );
+                rbody.useGravity = true;
+            }
         }
     }
 
     private void applyRotation()
     {
-        // set the tilt angle
-        float newSpeed = Vector3.Magnitude(vel);
-        Vector3 normVel = Vector3.Normalize(vel);
-        float rotationAngle = maxTiltAngle * (newSpeed / maxMovementSpeed);
-        rotationAngle = rotationAngle < maxTiltAngle ? rotationAngle : maxTiltAngle;
-        //Debug.Log("Angle: " + rotationAngle);
-        Vector3 rotationAxis = Vector3.Cross(Vector3.up, normVel);
-        //Debug.Log("Axis: " + rotationAxis);
-        float yRotation = Vector3.Angle(Vector3.forward, normVel);
-        if (vel.x < 0)
+        if (!falling)
         {
-            yRotation = 360.0f - yRotation;
+            // set the tilt angle
+            float newSpeed = Vector3.Magnitude(vel);
+            Vector3 normVel = Vector3.Normalize(vel);
+            float rotationAngle = maxTiltAngle * (newSpeed / maxMovementSpeed);
+            rotationAngle = rotationAngle < maxTiltAngle ? rotationAngle : maxTiltAngle;
+            //Debug.Log("Angle: " + rotationAngle);
+            Vector3 rotationAxis = Vector3.Cross(Vector3.up, normVel);
+            //Debug.Log("Axis: " + rotationAxis);
+            float yRotation = Vector3.Angle(Vector3.forward, normVel);
+            if (vel.x < 0)
+            {
+                yRotation = 360.0f - yRotation;
+            }
+            transform.rotation = Quaternion.identity;
+            transform.Rotate(rotationAxis, rotationAngle, Space.World);
+            transform.Rotate(Vector3.up, yRotation, Space.Self);
         }
-        transform.rotation = Quaternion.identity;
-        transform.Rotate(rotationAxis, rotationAngle, Space.World);
-        transform.Rotate(Vector3.up, yRotation, Space.Self);
     }
 
 	// Update is called once per frame
@@ -96,13 +114,35 @@ public class LizzieController : MonoBehaviour {
             newBullet.GetComponent<Rigidbody>().AddForce((Vector3.Normalize(shootDirectionAngled) * bulletSpeed) * speedScalar + vel, ForceMode.Impulse);
 
             // cause the tower to move in the oposite direction
-            applyHit(tipStrength * speedScalar, -normalized);
+            applyHit(tipStrength * speedScalar, -normalized, 0.1f);
         }
-        transform.Translate(vel * Time.deltaTime, Space.World);
+
+        // move the player and steer velocity
+        if (!falling)
+        {
+            if (vel != goalVel && currAnimationTime < animationTime)
+            {
+                currAnimationTime += Time.deltaTime;        // hotdog
+                if (currAnimationTime >= animationTime)
+                {
+                    currAnimationTime = 0.0f;
+                    vel = goalVel;
+                }
+                else
+                {
+                    vel = Vector3.Lerp(prevVel, goalVel, currAnimationTime / animationTime);
+                }
+            }
+            transform.Translate(vel * Time.deltaTime, Space.World);
+        }
 	}
 
     void LateUpdate()
     {
-        applyRotation();
+        if (!falling)
+        {
+            applyRotation();
+        }
+
     }
 }

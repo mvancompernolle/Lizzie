@@ -18,10 +18,7 @@ public class RamAI : MonoBehaviour
 
     float ai_GetJumpRange()
     {
-        if(WaitForLizzie)
-        {
-            return TriggerDistance;
-        }
+        if(WaitForLizzie) { return TriggerDistance; }
         float velocity = Mathf.Sqrt(Mathf.Pow(ai_Ram.velocity.x, 2) + Mathf.Pow(ai_Ram.velocity.z, 2));
         return velocity / 2;
     }
@@ -49,17 +46,17 @@ public class RamAI : MonoBehaviour
                 ai_Ram.AddForce(ai_GetDir() * Speed, ForceMode.Impulse);
                 WaitForLizzie = false;
             }
-            ai_Ram.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
+            ai_Ram.AddForce(Vector3.up * 3, ForceMode.Impulse);
             ai_HasJumped = true;
         }
         else if (!WaitForLizzie)
         {
-            if (ai_HitLizzie)
+            if (ai_HitLizzie && !ai_HasJumped)
             {
                 if (ai_GetDistance() > 20) { ai_HitLizzie = false; }
                 ai_Ram.AddForce(ai_GetDir() * -Speed);
             }
-            else { ai_Ram.AddForce(ai_GetDir() * Speed); }
+            else if(!ai_HasJumped) { ai_Ram.AddForce(ai_GetDir() * Speed); }
         }
     }
 

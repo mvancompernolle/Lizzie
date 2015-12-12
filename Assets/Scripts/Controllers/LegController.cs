@@ -3,11 +3,11 @@ using System.Collections;
 
 public class LegController : MonoBehaviour {
     public GameObject player;
+    public Transform legBase;
     public float maxAngle;
     private float currentAngle = 0.0f;
     public bool startForward;
     private bool moveForward;
-    public Vector3 offset;
     public float degreePerSpeed = 1.0f;
 
 	// Use this for initialization
@@ -26,21 +26,25 @@ public class LegController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        float degMovement = degreePerSpeed * Vector3.Magnitude(player.GetComponent<LizzieController>().vel) * Time.deltaTime;
-        Debug.Log(degMovement + ", " + currentAngle);
+        LizzieController playerController = player.GetComponent<LizzieController>();
+        float angleOffset = (Vector3.Magnitude(playerController.vel) / playerController.maxMovementSpeed) * -30;
+
+        float degMovement = degreePerSpeed * Vector3.Magnitude(playerController.vel) * Time.deltaTime;
         if (moveForward)
         {
             currentAngle += degMovement;
-            if (currentAngle > maxAngle)
+            if (currentAngle > maxAngle + angleOffset)
             {
+                currentAngle -= (currentAngle - (maxAngle + angleOffset));
                 moveForward = false;
             }
         }
         else
         {
             currentAngle -= degMovement;
-            if (currentAngle < -maxAngle)
+            if (currentAngle < -maxAngle + angleOffset)
             {
+                currentAngle += ((-maxAngle + angleOffset) - currentAngle);
                 moveForward = true;
             }
         }
@@ -48,8 +52,8 @@ public class LegController : MonoBehaviour {
 
     void FixedUpdate()
     {
-        transform.rotation = Quaternion.identity;
-        //transform.position = new Vector3(player.transform.position.x, 0.5f, player.transform.position.z) + offset;
-        transform.Rotate(Vector3.forward, currentAngle, Space.World);
+        //legBase.rotation = Quaternion.identity;
+        legBase.rotation = player.transform.rotation;
+        legBase.Rotate(Vector3.right, currentAngle, Space.Self);
     }
 }

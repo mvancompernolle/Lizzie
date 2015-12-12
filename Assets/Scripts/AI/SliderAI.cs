@@ -29,8 +29,6 @@ public class SliderAI : MonoBehaviour
 
     void FixedUpdate()
     {
-        Debug.LogWarning(ai_Slider.velocity);
-
         if(ai_GetDistance() < ai_GetVelocity() / 2 && !ai_HasSlid)
         {
             Vector3 dontGoUp = ai_GetDirection();
