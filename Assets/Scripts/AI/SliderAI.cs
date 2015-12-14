@@ -3,6 +3,7 @@ using System.Collections;
 
 public class SliderAI : MonoBehaviour
 {
+    private GameObject player;
     public Transform Target;
     public float SlideForce;
     public float Speed;
@@ -14,6 +15,7 @@ public class SliderAI : MonoBehaviour
     private bool ai_HasSlid;
     private bool ai_HitLizzie;
     private bool ai_IsStunned = false;
+    private bool playerSet = false;
 
     /* Setters */
 
@@ -39,12 +41,21 @@ public class SliderAI : MonoBehaviour
     
     void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player");
+        Target = player.GetComponent<Rigidbody>().transform;
         ai_Slider = GetComponent<Rigidbody>();
         ai_HasSlid = false;
     } 
 
     void FixedUpdate()
     {
+        if (!playerSet)
+        {
+            LizzieController lizzieController = player.GetComponent<LizzieController>();
+            lizzieController.bulletTargets.Add(gameObject);
+            playerSet = true;
+        }
+
         if(!ai_IsStunned)
         {
             if (ai_GetDistance() < ai_GetVelocity() / 2 && !ai_HasSlid)
@@ -60,7 +71,6 @@ public class SliderAI : MonoBehaviour
                     if (ai_GetDistance() >= 20) { ai_HasSlid = false; }
                     else
                     {
-                        Debug.Log((ai_GetDirection()));
                         ai_Slider.AddForce(ai_GetDirection() * -Speed);
                     }
                 }
