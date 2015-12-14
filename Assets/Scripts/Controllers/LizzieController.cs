@@ -106,6 +106,10 @@ public class LizzieController : MonoBehaviour {
             GameObject newBullet = Instantiate(bulletObject, bulletSpawnLocation.position, transform.rotation) as GameObject;
             newBullet.transform.position = position + (normalized * bulletOffset);
 
+            //Makes sure Lizzie's bullets don't collide with her.
+            BulletController testing = newBullet.GetComponent<BulletController>();
+            testing.Origin = rbody.GetComponent<Collider>();
+
             // apply force based on mase location and distance form center
             float distance = Vector3.Magnitude(shootDirection);
             float minLength = Screen.width < Screen.height ? Screen.width / 2.0f : Screen.height / 2.0f;

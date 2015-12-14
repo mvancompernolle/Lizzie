@@ -14,7 +14,22 @@ public class RamAI : MonoBehaviour
     private bool ai_HasJumped;
     private bool ai_HitLizzie;
 
+    /* Intakes */
+
+    /********************************************************************\
+     *  Mostly used by BulletController objects, though, theorectically *
+     *  Lizzie could call this to knock back Rammers she runs into.     *
+    \********************************************************************/
+    public void applyHit(float force, Vector3 direction)
+    {
+        ai_Ram.AddForce(direction * force, ForceMode.Impulse);
+        ai_HasJumped = true;
+    }
+
     /* Getters */
+
+    //For use with BulletController, mostly. Might prove useful elsewhere.
+    public Vector3 ai_GetPos() { return transform.position; }
 
     float ai_GetJumpRange()
     {

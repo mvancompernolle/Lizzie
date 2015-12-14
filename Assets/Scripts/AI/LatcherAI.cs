@@ -21,7 +21,13 @@ public class LatcherAI : MonoBehaviour
     private bool ai_HasJumped;
     private bool ai_HitLizzie;
 
+    /* Setters */
+
+    public void ai_SetParent(Transform parent) { ai_Latcher.transform.parent = parent; }
+
     /* Getters */
+
+    public Rigidbody ai_GetRBody() { return ai_Latcher; }
 
     private Vector3 ai_GetDir() { return (Target.position - transform.position).normalized; }
     private float ai_GetDistance() { return Vector3.Distance(transform.position, Target.position); }
@@ -86,12 +92,10 @@ public class LatcherAI : MonoBehaviour
             LizzieController Lizzie = lizzie.collider.GetComponent<LizzieController>();
             Vector3 force = ai_GetDir();
 
-            ai_Latcher.transform.parent = lizzie.transform;
-
             force.y = 0.0f;
             ai_HitLizzie = true;
             ai_HasLatched = true;
-            
+            ai_SetParent(lizzie.transform);
             Lizzie.applyHit((JumpForce / 100) * (ai_GetJumpRange() * 2), force);
         }
     }

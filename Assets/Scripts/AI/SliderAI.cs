@@ -9,11 +9,27 @@ public class SliderAI : MonoBehaviour
     public float SlideInterval = 2.0f;
 
     private Rigidbody ai_Slider;
+    private float ai_StunTimer;
     private float ai_CurrentTime = 0.0f;
     private bool ai_HasSlid;
     private bool ai_HitLizzie;
+    private bool ai_IsStunned = false;
+
+    /* Setters */
+
+    public void ai_Stun(float duration)
+    {
+        ai_IsStunned = true;
+        ai_StunTimer = duration;
+    }
+
+    public void ai_ApplyHit(Vector3 force)
+    {
+        ai_Slider.AddForce(force, ForceMode.Impulse);
+    }
 
     /* Getters */
+    public Rigidbody ai_GetRBody() { return ai_Slider; }
 
     private Vector3 ai_GetDirection() { return (Target.position - transform.position).normalized; }
     private float ai_GetVelocity() { return Mathf.Sqrt(Mathf.Pow(ai_Slider.velocity.x, 2) + Mathf.Pow(ai_Slider.velocity.z, 2)); }
@@ -29,24 +45,32 @@ public class SliderAI : MonoBehaviour
 
     void FixedUpdate()
     {
-        if(ai_GetDistance() < ai_GetVelocity() / 2 && !ai_HasSlid)
+        if(!ai_IsStunned)
         {
-            Vector3 dontGoUp = ai_GetDirection();
-            dontGoUp.y = 0.0f;
-            ai_Slider.AddForce(dontGoUp * SlideForce, ForceMode.Impulse);
-        }
-        else
-        {
-            if(ai_HasSlid)
+            if (ai_GetDistance() < ai_GetVelocity() / 2 && !ai_HasSlid)
             {
-                if(ai_GetDistance() >= 20) { ai_HasSlid = false; }
-                else
-                {
-                    Debug.Log((ai_GetDirection()));
-                    ai_Slider.AddForce(ai_GetDirection() * -Speed);
-                }
+                Vector3 dontGoUp = ai_GetDirection();
+                dontGoUp.y = 0.0f;
+                ai_Slider.AddForce(dontGoUp * SlideForce, ForceMode.Impulse);
             }
-            else { ai_Slider.AddForce(ai_GetDirection() * Speed); }
+            else
+            {
+                if (ai_HasSlid)
+                {
+                    if (ai_GetDistance() >= 20) { ai_HasSlid = false; }
+                    else
+                    {
+                        Debug.Log((ai_GetDirection()));
+                        ai_Slider.AddForce(ai_GetDirection() * -Speed);
+                    }
+                }
+                else { ai_Slider.AddForce(ai_GetDirection() * Speed); }
+            }
+        }
+        else if(ai_CurrentTime >= ai_StunTimer)
+        {
+            ai_IsStunned = false;
+            ai_CurrentTime = 0.0f;
         }
     }
 
