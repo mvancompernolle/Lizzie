@@ -1,10 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class ShootController : MonoBehaviour {
 
     public GameObject player;
     private LizzieController lizzieController;
+    public GameObject bulletObject;
+    public Transform bulletSpawnLocation;
+    public float tipStrength;
+    public float bulletSpeed;
+    private float mousePrecision = 2.0f;
+    public float bulletOffset = 5.0f;
 
 	// Use this for initialization
 	void Start () {
@@ -38,64 +45,77 @@ public class ShootController : MonoBehaviour {
             }
 
             GameObject closestEnemy = null;
-            if (bulletTargets.Count > 0)
+            if (lizzieController.bulletTargets.Count > 0)
             {
-                float closestDistance = Vector3.Distance(target, bulletTargets[0].GetComponent<Rigidbody>().transform.position);
-                Debug.Log("enemy distance: " + closestDistance);
+                float closestDistance = Vector3.Distance(target, lizzieController.bulletTargets[0].GetComponent<Rigidbody>().transform.position);
                 if (closestDistance <= mousePrecision)
                 {
-                    closestEnemy = bulletTargets[0];
+                    closestEnemy = lizzieController.bulletTargets[0];
                 }
                 // determine if mouse is over enemy
-                for (int i = 1; i < bulletTargets.Count; ++i)
+                for (int i = 1; i < lizzieController.bulletTargets.Count; ++i)
                 {
-                    float enemyDist = Vector3.Distance(target, bulletTargets[1].GetComponent<Rigidbody>().transform.position);
-                    Debug.Log("enemy distance: " + enemyDist);
+                    float enemyDist = Vector3.Distance(target, lizzieController.bulletTargets[1].GetComponent<Rigidbody>().transform.position);
                     if (enemyDist <= mousePrecision && enemyDist < closestDistance)
                     {
-                        closestEnemy = bulletTargets[i];
+                        closestEnemy = lizzieController.bulletTargets[i];
                     }
                 }
             }
 
-            //Vector3 shootDirection = new Vector3(mouseX, 0.0f, mouseY) - new Vector3(Screen.width/2, 0.0f, Screen.height/2);
-            Vector3 shootDirectionAngled = new Vector3(target.x, 2.0f, target.z) - bulletSpawnLocation.position;
-            Vector3 shootDirection = new Vector3(target.x, 0.0f, target.z) - new Vector3(bulletSpawnLocation.position.x, 0.0f, bulletSpawnLocation.position.z);
+            // create new bullet and set position
+            Vector3 position = new Vector3(
+                bulletSpawnLocation.position.x,
+                bulletSpawnLocation.position.y + GetComponent<BoxCollider>().bounds.extents.y,
+                bulletSpawnLocation.position.z);
+
+            Vector3 direction = Vector3.Normalize(gameObject.transform.position - lizzieController.transform.position);
+            Vector3 shootDirectionAngled = new Vector3(target.x, 2.0f, target.z) - position;
+            Vector3 shootDirection = new Vector3(target.x, 0.0f, target.z) - new Vector3(position.x, 0.0f, position.z);
 
             Vector3 normalized = Vector3.Normalize(shootDirection);
 
-            // create new bullet and set position
-            Vector3 position = new Vector3(
-                transform.position.x,
-                transform.position.y + GetComponent<BoxCollider>().bounds.extents.y,
-                transform.position.z);
             GameObject newBullet = Instantiate(bulletObject, bulletSpawnLocation.position, transform.rotation) as GameObject;
             newBullet.transform.position = position + (normalized * bulletOffset);
-
-            //Makes sure Lizzie's bullets don't collide with her.
-            BulletController testing = newBullet.GetComponent<BulletController>();
-            testing.Origin = rbody.GetComponent<Collider>();
-
-            // apply force based on mase location and distance form center
-            float distance = Vector3.Magnitude(shootDirection);
+            ArrowMovementScript bulletMovement = newBullet.GetComponent<ArrowMovementScript>();
+            float distance = Vector3.Magnitude(new Vector2(mouseX, mouseY) - new Vector2(Screen.width / 2.0f, Screen.height / 2.0f));
             float minLength = Screen.width < Screen.height ? Screen.width / 2.0f : Screen.height / 2.0f;
+            //Debug.Log("distance: " + distance + " minLength: " + minLength);
             float scaleVel = (distance / minLength);
-            float speedScalar = scaleVel < 0.3f ? 0.3f : scaleVel;
-            if (closestEnemy == null)
+            scaleVel = Mathf.Clamp(scaleVel, 0.3f, 1.0f);
+            bulletMovement.speed = 50 * scaleVel;
+            if (closestEnemy != null)
             {
-                newBullet.GetComponent<Rigidbody>().AddForce((Vector3.Normalize(shootDirectionAngled) * bulletSpeed) * speedScalar + vel, ForceMode.Impulse);
-                Debug.Log("free");
+                Debug.Log("locked on");
+                bulletMovement.target = closestEnemy;
+                bulletMovement.targetPos = closestEnemy.transform.position;
             }
             else
             {
-                Debug.Log("locked on");
+                Debug.Log("free shot");
+                bulletMovement.target = null;
+                bulletMovement.targetPos = new Vector3(target.x, 0.0f, target.z);
+            }
+            Vector3 dir = bulletMovement.targetPos - newBullet.transform.position;
+            bulletMovement.currentRotation = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg + 90;
+
+            /*
+            if (closestEnemy == null)
+            {
+                newBullet.GetComponent<Rigidbody>().AddForce((Vector3.Normalize(shootDirectionAngled) * bulletSpeed) * speedScalar + lizzieController.vel, ForceMode.Impulse);
+            }
+            else
+            {
                 newBullet.GetComponent<Rigidbody>().AddForce(
                     (Vector3.Normalize(closestEnemy.GetComponent<Rigidbody>().transform.position - newBullet.transform.position).normalized * bulletSpeed) * speedScalar, ForceMode.Impulse);
             }
-
+            */
 
             // cause the tower to move in the oposite direction
-            applyHit(tipStrength * speedScalar, -normalized, 0.1f);
+            lizzieController.applyHit(tipStrength * scaleVel, -normalized, 0.1f);
+
+            //BulletController hotdog = newBullet.GetComponent<BulletController>();
+            //testing.Origin = lizzieController.rbody.GetComponent<Collider>();
         }
 	}
 }
