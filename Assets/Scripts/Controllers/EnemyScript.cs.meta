@@ -1,7 +1,13 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Scripts/AI/SliderAI.cs.meta
 guid: f696a1b39dcf0b546b8762cb1c2f46bc
 timeCreated: 1450207475
 licenseType: Free
+=======
+guid: c6530756bb12a5a41a79d0154aefa739
+timeCreated: 1450130741
+licenseType: Pro
+>>>>>>> 4772d616d41302c61f08dcf1f8291c42c33dc623:Assets/Scripts/Controllers/EnemyScript.cs.meta
 MonoImporter:
   serializedVersion: 2
   defaultReferences: []

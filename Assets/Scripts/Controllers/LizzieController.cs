@@ -3,25 +3,18 @@ using System.Collections.Generic;
 
 public class LizzieController : MonoBehaviour {
     public Rigidbody rbody;
-    public GameObject bulletObject;
-    public Transform bulletSpawnLocation;
-    public List<GameObject> bulletTargets;
-    public float bulletSpeed;
-    public float tipStrength;
+    public List<GameObject> bulletTargets = new List<GameObject>();
     public float maxMovementSpeed;
     public float maxTiltAngle;
-    public float bulletOffset = 5.0f;
     public Vector3 vel, prevVel, goalVel;
     private float animationTime;
     private float currAnimationTime = 0.0f;
-    private float mousePrecision = 2.0f;
     bool falling;
 
 	// Use this for initialization
 	void Start () {
         falling = false;
         vel = prevVel = goalVel = new Vector3(0.0f, 0.0f, 0.0f);
-        bulletTargets = new List<GameObject>();
 	}
 
     public void applyHit(float percentTilt, Vector3 direction, float snapTime = 0.1f)
@@ -32,6 +25,7 @@ public class LizzieController : MonoBehaviour {
             prevVel = vel;
             currAnimationTime = 0.0f;
             animationTime = snapTime;
+            direction.y = 0.0f;
             goalVel += direction * percentTilt * maxMovementSpeed;
             float newSpeed = Vector3.Magnitude(goalVel);
             Vector3 normVel = Vector3.Normalize(goalVel);
