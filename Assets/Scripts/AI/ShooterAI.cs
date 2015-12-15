@@ -1,60 +1,47 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ShooterAI : MonoBehaviour
+public class ShooterAI : EnemyController
 {
-    public Transform Target;
     public float Range = 20.0f;
     public float ProjectileSpeed = 5.0f;
     public float ShootInterval = 2.0f;
     public GameObject Projectile;
-    public bool OverrideProjectileStats; public float DamageOverride;
-    public float TimerOverride;
-    public bool UseAmmo;
+    public bool ProjectileHasLifetime = true;
+    public float ProjectileLifetime = 5.0f;
+    public bool UseAmmo = false;
     public int Ammo;
 
-    private GameObject ai_Shooter;
     private Transform ai_BulletSpawn;
     private float ai_CurrentTime;
-    private int ai_CurrentAmmo = -1;
+    private int ai_CurrentAmmo = 0;
     private bool ai_HasAmmo = true;
-
-    /* Getters */
-
-    private float ai_GetDistToTarget() { return Vector3.Distance(Target.position, transform.position); }
-    private Vector3 ai_GetShotDirection() { return (Target.position - transform.position).normalized; }
 
     /* Thinky Bits */
 
     private bool ai_CanShoot()
     {
         if (ai_CurrentAmmo <= 0) { ai_HasAmmo = false; return false; }
-        if (ai_GetDistToTarget() <= Range) { return true; }
+        if (ai_GetDistToTar() <= Range) { return true; }
         return false;
     }
 
     private void ai_Fire()
     {
         if(UseAmmo && ai_HasAmmo) { ai_CurrentAmmo--; }
-        Debug.Log(ai_CurrentAmmo);
-
-        Vector3 shootHere = ai_GetShotDirection();
 
         GameObject newBullet = Instantiate(Projectile, ai_BulletSpawn.position, transform.rotation) as GameObject;
         newBullet.transform.position = ai_BulletSpawn.position;
-        newBullet.GetComponent<Rigidbody>().AddForce(shootHere * ProjectileSpeed, ForceMode.Impulse);
+        newBullet.GetComponent<Rigidbody>().AddForce(ai_GetDir() * ProjectileSpeed, ForceMode.Impulse);
 
-        //checks to see if the tower is shooting an AI
-        if (newBullet.GetComponent<LatcherAI>() != null) { newBullet.GetComponent<LatcherAI>().Target = FindObjectOfType<LizzieController>().GetComponent<Rigidbody>(); }
+        if (newBullet.GetComponent<BulletController>() != null) { newBullet.GetComponent<BulletController>().Damage = Damage; }
+        else if (newBullet.GetComponent<LatcherAI>() != null) { newBullet.GetComponent<LatcherAI>().Damage = Damage; }
 
         //Overrides any and all stats specified as an override
-        if (OverrideProjectileStats)
+        if (ProjectileHasLifetime)
         {
-            if (newBullet.GetComponent<BulletController>() != null) { newBullet.GetComponent<BulletController>().Damage = DamageOverride; }
-            else if(newBullet.GetComponent<LatcherAI>() != null) { newBullet.GetComponent<LatcherAI>().JumpForce = DamageOverride; }
-
-            if (newBullet.GetComponent<DestroyByTimer>() != null) { newBullet.GetComponent<DestroyByTimer>().timeLeft = TimerOverride; }
-            else { newBullet.AddComponent<DestroyByTimer>().timeLeft = TimerOverride; }
+            if (newBullet.GetComponent<DestroyByTimer>() != null) { newBullet.GetComponent<DestroyByTimer>().timeLeft = Damage; }
+            else { newBullet.AddComponent<DestroyByTimer>().timeLeft = ProjectileLifetime; }
         }
 
         ai_CurrentTime = 0.0f;
@@ -66,8 +53,7 @@ public class ShooterAI : MonoBehaviour
     {
         if(UseAmmo) { ai_CurrentAmmo = Ammo; }
         ai_BulletSpawn = GetComponent<Transform>();
-        ai_BulletSpawn = ai_Shooter.transform.FindChild("BulletSpawn").transform;
-        ai_Shooter = GetComponent<GameObject>();
+        ai_BulletSpawn = ai_Me.transform.FindChild("BulletSpawn").transform;
         Projectile = GetComponent<GameObject>();
     }
 
