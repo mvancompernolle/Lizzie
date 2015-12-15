@@ -89,7 +89,7 @@ public class ShootController : MonoBehaviour {
             if (closestEnemy != null)
             {
                 //Debug.Log("locked on");
-                bulletMovement.target = null;
+                bulletMovement.target = closestEnemy;
                 bulletMovement.targetPos = closestEnemy.transform.position;
             }
             else

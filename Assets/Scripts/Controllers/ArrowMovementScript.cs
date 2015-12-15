@@ -91,6 +91,6 @@ public class ArrowMovementScript : MonoBehaviour {
         transform.Translate(vel * Time.deltaTime, Space.World);
         transform.rotation = Quaternion.identity;
         transform.Rotate(Vector3.up, -currentRotation, Space.World);
-        //transform.Rotate(Vector3.right, downRotation, Space.Self);
+        transform.Rotate(Vector3.right, downRotation, Space.Self);
 	}
 }
