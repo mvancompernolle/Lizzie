@@ -88,21 +88,22 @@ public class ShootController : MonoBehaviour {
             bulletMovement.speed = 50 * scaleVel;
             if (closestEnemy != null)
             {
-                Debug.Log("locked on");
-                bulletMovement.target = closestEnemy;
+                //Debug.Log("locked on");
+                bulletMovement.target = null;
                 bulletMovement.targetPos = closestEnemy.transform.position;
             }
             else
             {
-                Debug.Log("free shot");
+                //Debug.Log("free shot");
                 bulletMovement.target = null;
                 bulletMovement.targetPos = new Vector3(target.x, 0.0f, target.z);
-                // move arrow
-                bulletMovement.vel = Vector3.Normalize(bulletMovement.targetPos - bulletMovement.transform.position) * bulletMovement.speed;
             }
+            // move arrow
+            bulletMovement.vel = Vector3.Normalize(bulletMovement.targetPos - bulletMovement.transform.position) * bulletMovement.speed;
             Vector3 dir = bulletMovement.targetPos - newBullet.transform.position;
             bulletMovement.currentRotation = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg + 90;
-
+            BulletController bulletController = newBullet.GetComponent<BulletController>();
+            bulletController.Origin = lizzieController.rbody.GetComponent<Collider>();
             /*
             if (closestEnemy == null)
             {
@@ -117,9 +118,6 @@ public class ShootController : MonoBehaviour {
 
             // cause the tower to move in the oposite direction
             lizzieController.applyHit(tipStrength * scaleVel, -normalized, 0.1f);
-
-            //BulletController hotdog = newBullet.GetComponent<BulletController>();
-            //testing.Origin = lizzieController.rbody.GetComponent<Collider>();
         }
 	}
 }

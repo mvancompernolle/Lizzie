@@ -42,6 +42,7 @@ public class BulletController : MonoBehaviour
 
 	void OnCollisionEnter(Collision blerg)
     {
+        Debug.Log("on collision enter bullet");
         /*****************************************************************\
          *  'blerg' is checked against 'Origin' so that the bullet won't *
          *   collide with the thing that is shooting it                  *
@@ -60,6 +61,7 @@ public class BulletController : MonoBehaviour
             }
             else if (blerg.gameObject.CompareTag("Rammer")) //Rams receive a pretty powerful kick
             {
+                Debug.Log("Rammer hit");
                 RamAI ai_Ram = blerg.collider.GetComponent<RamAI>();
                 Vector3 direction = blt_GetDirection(ai_Ram.ai_GetDir());
 

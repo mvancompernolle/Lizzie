@@ -9,7 +9,7 @@ public class ArrowMovementScript : MonoBehaviour {
     public float speed = 10;
     public float currentRotation;
     private float desiredRotation;
-    public float turnRate = 100.0f;
+    public float turnRate = 10.0f;
     bool landed = false;
 
 	// Use this for initialization
@@ -22,23 +22,21 @@ public class ArrowMovementScript : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("on trigger enter");
+        vel = new Vector3(0.0f, 0.0f, 0.0f);
         if (other.gameObject.tag.Equals("Floor"))
         {
-            vel = new Vector3(0.0f, 0.0f, 0.0f);
             Destroy(gameObject, 5.0f);
+        }
+        else if (target != null && other.gameObject == target)
+        {
+            Destroy(gameObject);
+            //transform.parent = other.transform;
         }
     }
 
     void OnCollisionEnter(Collision other)
     {
-        Debug.Log("on collision enter");
-        if (target != null && other.gameObject == target)
-        {
-            Debug.Log("hit target");
-            vel = new Vector3(0.0f, 0.0f, 0.0f);
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
 	
 	// Update is called once per frame
@@ -53,12 +51,12 @@ public class ArrowMovementScript : MonoBehaviour {
             {
                 time = distance / relativeSpeed;
             }
-            targetPos = target.transform.position + targetRbody.velocity * time;
+            targetPos = target.transform.position; //+ targetRbody.velocity * time;
             Vector3 posDiff = new Vector3(targetPos.x - gameObject.transform.position.x, 0.0f, targetPos.z - gameObject.transform.position.z);
             desiredRotation = Mathf.Atan2(posDiff.z, posDiff.x) * Mathf.Rad2Deg + 90;
             desiredRotation = desiredRotation % 360;
             if (desiredRotation < 0) { desiredRotation += 360; }
-
+            Debug.Log("desired: " + desiredRotation);
             if (Mathf.Abs(desiredRotation - currentRotation) < turnRate * Time.deltaTime)
             {
                 currentRotation = desiredRotation;
@@ -77,8 +75,10 @@ public class ArrowMovementScript : MonoBehaviour {
                 currentRotation = currentRotation % 360;
                 if (currentRotation < 0) { currentRotation += 360; }
             }
-            // move arrow
-            vel = Vector3.Normalize(targetPos - transform.position) * speed;
+            // move 
+            vel.x = Mathf.Cos(currentRotation+90 * Mathf.Deg2Rad) * speed;
+            vel.z = Mathf.Sin(currentRotation+90 * Mathf.Deg2Rad) * speed;
+            //Debug.Log("x: " + vel.x + " y: " + vel.z);
         }
 
         Vector3 dir = targetPos - transform.position;
@@ -91,6 +91,6 @@ public class ArrowMovementScript : MonoBehaviour {
         transform.Translate(vel * Time.deltaTime, Space.World);
         transform.rotation = Quaternion.identity;
         transform.Rotate(Vector3.up, -currentRotation, Space.World);
-        transform.Rotate(Vector3.right, downRotation, Space.Self);
+        //transform.Rotate(Vector3.right, downRotation, Space.Self);
 	}
 }
