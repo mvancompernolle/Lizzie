@@ -8,6 +8,7 @@ public class ShootController : MonoBehaviour {
     private LizzieController lizzieController;
     public GameObject bulletObject;
     public Transform bulletSpawnLocation;
+    private Transform floor;
     public float tipStrength;
     public float bulletSpeed;
     private float mousePrecision = 2.0f;
@@ -16,6 +17,7 @@ public class ShootController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         lizzieController = player.GetComponent<LizzieController>();
+        floor = GameObject.FindGameObjectWithTag("Floor").transform;
 	}
 	
 	// Update is called once per frame
@@ -95,6 +97,8 @@ public class ShootController : MonoBehaviour {
                 Debug.Log("free shot");
                 bulletMovement.target = null;
                 bulletMovement.targetPos = new Vector3(target.x, 0.0f, target.z);
+                // move arrow
+                bulletMovement.vel = Vector3.Normalize(bulletMovement.targetPos - bulletMovement.transform.position) * bulletMovement.speed;
             }
             Vector3 dir = bulletMovement.targetPos - newBullet.transform.position;
             bulletMovement.currentRotation = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg + 90;

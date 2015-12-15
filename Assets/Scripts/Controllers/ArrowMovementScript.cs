@@ -20,19 +20,26 @@ public class ArrowMovementScript : MonoBehaviour {
         }
 	}
 
-    /*void OnCollisionEnter(Collision hitBy)
+    void OnTriggerEnter(Collider other)
     {
-        Debug.Log("on collision enter");
-        if (hitBy.gameObject.tag.Equals("Floor"))
+        Debug.Log("on trigger enter");
+        if (other.gameObject.tag.Equals("Floor"))
         {
+            vel = new Vector3(0.0f, 0.0f, 0.0f);
             Destroy(gameObject, 5.0f);
         }
-        else if (target != null && hitBy.gameObject == target)
+    }
+
+    void OnCollisionEnter(Collision other)
+    {
+        Debug.Log("on collision enter");
+        if (target != null && other.gameObject == target)
         {
             Debug.Log("hit target");
+            vel = new Vector3(0.0f, 0.0f, 0.0f);
             Destroy(gameObject);
         }
-    }*/
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -70,6 +77,8 @@ public class ArrowMovementScript : MonoBehaviour {
                 currentRotation = currentRotation % 360;
                 if (currentRotation < 0) { currentRotation += 360; }
             }
+            // move arrow
+            vel = Vector3.Normalize(targetPos - transform.position) * speed;
         }
 
         Vector3 dir = targetPos - transform.position;
@@ -78,9 +87,6 @@ public class ArrowMovementScript : MonoBehaviour {
             downRotation -= 90;
         //Debug.Log(downRotation);
         //Debug.Log("target: " + targetPos);
-
-        // move arrow
-        vel = Vector3.Normalize(targetPos - transform.position) * speed;
         //Debug.Log("rotation: " + currentRotation + " vel: " + vel + " speed: " + speed);
         transform.Translate(vel * Time.deltaTime, Space.World);
         transform.rotation = Quaternion.identity;
