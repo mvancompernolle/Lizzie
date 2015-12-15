@@ -61,7 +61,7 @@ public class BulletController : MonoBehaviour
             else if (blerg.gameObject.CompareTag("Rammer")) //Rams receive a pretty powerful kick
             {
                 RamAI ai_Ram = blerg.collider.GetComponent<RamAI>();
-                Vector3 direction = blt_GetDirection(ai_Ram.ai_GetPos());
+                Vector3 direction = blt_GetDirection(ai_Ram.ai_GetDir());
 
                 blt_DespawnNextFrame = true;
                 ai_Ram.applyHit(Damage, direction);
@@ -86,7 +86,7 @@ public class BulletController : MonoBehaviour
 
                 force.y = 0.0f;
                // ai_Latcher.ai_SetParent(blt_Me.transform);
-                blt_Me.AddForce(force * ai_Latcher.JumpForce, ForceMode.Impulse);
+                blt_Me.AddForce(force * ai_Latcher.Damage, ForceMode.Impulse);
             }
         }
     }

@@ -7,63 +7,55 @@ using System.Collections;
  *  Latchers DO NOT modify Lizzie's behavior or "physics" in any way... YET  *
 \*****************************************************************************/
 
-public class LatcherAI : MonoBehaviour
+public class LatcherAI : EnemyController
 {
-    public Rigidbody Target;
-    public float Speed = 10;
-    public float JumpForce = 1;
     public float LatchStrength = 5;
-
-    private Rigidbody ai_Latcher;
+    
     private Vector3 ai_Offset;
     private Transform ai_OT; //This PKMN's OT
-    private bool ai_HasLatched;
-    private bool ai_HasJumped;
-    private bool ai_HitLizzie;
+    private Quaternion ai_Rotation;
+    private bool ai_HasLatched = false;
+    private bool ai_HasJumped = false;
+    private bool ai_HitLizzie = false;
 
     /* Setters */
 
-    public void ai_SetParent(Transform parent) { ai_Latcher.transform.parent = parent; }
-
-    /* Getters */
-
-    public Rigidbody ai_GetRBody() { return ai_Latcher; }
-
-    private Vector3 ai_GetDir() { return (Target.position - transform.position).normalized; }
-    private float ai_GetDistance() { return Vector3.Distance(transform.position, Target.position); }
-    private float ai_GetJumpRange()
-    {
-        float velocity = Mathf.Sqrt(Mathf.Pow(ai_Latcher.velocity.x, 2) + Mathf.Pow(ai_Latcher.velocity.z, 2));
-        return velocity / 2;
-    }
-
+    public void ai_SetParent(Transform parent) { ai_Me.transform.parent = parent; }
 
     /* Updaters */
 
-    void Start()
+    public override void Start()
     {
-        ai_Latcher = GetComponent<Rigidbody>();
-        ai_OT = ai_Latcher.transform.parent;
-        ai_HasLatched = false;
-        ai_HasJumped = false;
-        ai_HitLizzie = false;
+        base.Start();
+
+        if (ai_Me.transform.parent == null)
+        {
+            ai_OT = GameObject.Find("Enemies/Latchers").transform;
+            transform.parent = ai_OT;
+        }
+        else
+        {
+            ai_OT = ai_Me.transform.parent;
+        }
+        ai_Rotation = transform.rotation;
     }
 
     void FixedUpdate()
     {
-        if (ai_GetDistance() < ai_GetJumpRange() && !ai_HasJumped)
+        if (ai_GetDistToTar() < ai_GetAttackRange() && !ai_HasJumped)
         {
-            ai_Latcher.AddForce(Vector3.up * 3, ForceMode.Impulse);
+            ai_Me.AddForce(Vector3.up * 3, ForceMode.Impulse);
+            WaitForLizzie = false;
             ai_HasJumped = true;
         }
         else if (ai_HitLizzie && !ai_HasJumped)
         {
-            if (ai_GetDistance() > 20) { ai_HitLizzie = false; }
-            ai_Latcher.AddForce(ai_GetDir() * -Speed);
+            if (ai_GetDistToTar() > 20) { ai_HitLizzie = false; }
+            ai_Me.AddForce(ai_GetDir() * -Speed);
         }
         else
         {
-            ai_Latcher.AddForce(ai_GetDir() * Speed);
+            ai_Me.AddForce(ai_GetDir() * Speed);
         }
     }
 
@@ -71,18 +63,17 @@ public class LatcherAI : MonoBehaviour
     {
         if (!ai_HasLatched)
         {
-            ai_Latcher.transform.parent = ai_OT;
-            ai_Latcher.useGravity = true;
+            
+
+            ai_Me.transform.parent = ai_OT;
+            ai_Me.useGravity = true;
         }
-        else
-        {
-            ai_Latcher.useGravity = false;
-        }
+        else { ai_Me.useGravity = false; }
     }
 
     void OnCollisionStay(Collision other)
     {
-        if (other.gameObject.CompareTag("Floor")) { ai_HasJumped = false; ai_HasLatched  = false; }
+        if (other.gameObject.CompareTag("Floor")) { ai_HasJumped = false; ai_HasLatched  = false; ai_Me.rotation = ai_Rotation; }
     }
 
     void OnCollisionEnter(Collision lizzie)
@@ -96,7 +87,7 @@ public class LatcherAI : MonoBehaviour
             ai_HitLizzie = true;
             ai_HasLatched = true;
             ai_SetParent(lizzie.transform);
-            Lizzie.applyHit((JumpForce / 100) * (ai_GetJumpRange() * 2), force);
+            if(Lizzie != null) { Lizzie.applyHit((Damage / 100) * ai_GetVel(), force); }
         }
     }
 }
