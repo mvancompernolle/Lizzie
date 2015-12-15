@@ -16,9 +16,9 @@ public class RamAI : EnemyController
 
     /* Updaters */
 
-    void Start () 
+    public override void Start () 
     {
-        ai_Me = GetComponent<Rigidbody>();
+        base.Start();
         ai_HasJumped = false;
         ai_HitLizzie = false;
     }
