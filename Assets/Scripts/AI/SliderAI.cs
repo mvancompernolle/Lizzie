@@ -76,6 +76,7 @@ public class SliderAI : MonoBehaviour
 
     void OnCollisionEnter(Collision lizzie)
     {
+        //hotdog
         if(lizzie.gameObject.CompareTag("Player") && !ai_HitLizzie)
         {
             LizzieController Lizzie = lizzie.collider.GetComponent<LizzieController>();
