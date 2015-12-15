@@ -30,6 +30,11 @@ public class BulletController : MonoBehaviour
 
     /* Updaters */
 
+    void Start()
+    {
+        blt_Me = GetComponent<Rigidbody>();
+    }
+
     void Update()
     {
         if(blt_DespawnNextFrame) { Destroy(blt_Me); }

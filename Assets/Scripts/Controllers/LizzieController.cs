@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public class LizzieController : MonoBehaviour {
     public Rigidbody rbody;
     public GameObject bulletObject;
     public Transform bulletSpawnLocation;
+    public List<GameObject> bulletTargets;
     public float bulletSpeed;
     public float tipStrength;
     public float maxMovementSpeed;
@@ -13,12 +14,14 @@ public class LizzieController : MonoBehaviour {
     public Vector3 vel, prevVel, goalVel;
     private float animationTime;
     private float currAnimationTime = 0.0f;
+    private float mousePrecision = 2.0f;
     bool falling;
 
 	// Use this for initialization
 	void Start () {
         falling = false;
         vel = prevVel = goalVel = new Vector3(0.0f, 0.0f, 0.0f);
+        bulletTargets = new List<GameObject>();
 	}
 
     public void applyHit(float percentTilt, Vector3 direction, float snapTime = 0.1f)
@@ -69,58 +72,6 @@ public class LizzieController : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        if (Input.GetButtonDown("Fire1") ) 
-        {
-            // get mouse direction
-            float mouseX = Input.mousePosition.x;
-            float mouseY = Input.mousePosition.y;
-
-            Ray ray = Camera.main.ViewportPointToRay(new Vector3(mouseX / Screen.width, mouseY / Screen.height));
-
-            var hits = Physics.RaycastAll(ray);
-            Vector3 target = new Vector3();
-            if (hits.Length > 0)
-            {
-                target = hits[0].point;
-                float dist = hits[0].distance;
-                for (int i = 1; i < hits.Length; ++i)
-                {
-                    if (hits[i].distance > dist)
-                    {
-                        dist = hits[i].distance;
-                        target = hits[i].point;
-                    }
-                }
-            }
-            //Vector3 shootDirection = new Vector3(mouseX, 0.0f, mouseY) - new Vector3(Screen.width/2, 0.0f, Screen.height/2);
-            Vector3 shootDirectionAngled = new Vector3(target.x, 2.0f, target.z) - bulletSpawnLocation.position;
-            Vector3 shootDirection = new Vector3(target.x, 0.0f, target.z) - new Vector3(bulletSpawnLocation.position.x, 0.0f, bulletSpawnLocation.position.z);
-            
-            Vector3 normalized = Vector3.Normalize(shootDirection);
-
-            // create new bullet and set position
-            Vector3 position = new Vector3(
-                transform.position.x,
-                transform.position.y + GetComponent<BoxCollider>().bounds.extents.y,
-                transform.position.z);
-            GameObject newBullet = Instantiate(bulletObject, bulletSpawnLocation.position, transform.rotation) as GameObject;
-            newBullet.transform.position = position + (normalized * bulletOffset);
-
-            //Makes sure Lizzie's bullets don't collide with her.
-            BulletController testing = newBullet.GetComponent<BulletController>();
-            testing.Origin = rbody.GetComponent<Collider>();
-
-            // apply force based on mase location and distance form center
-            float distance = Vector3.Magnitude(shootDirection);
-            float minLength = Screen.width < Screen.height ? Screen.width / 2.0f : Screen.height / 2.0f;
-            float scaleVel = (distance / minLength);
-            float speedScalar = scaleVel < 0.3f ? 0.3f : scaleVel;
-            newBullet.GetComponent<Rigidbody>().AddForce((Vector3.Normalize(shootDirectionAngled) * bulletSpeed) * speedScalar + vel, ForceMode.Impulse);
-
-            // cause the tower to move in the oposite direction
-            applyHit(tipStrength * speedScalar, -normalized, 0.1f);
-        }
-
         // move the player and steer velocity
         if (!falling)
         {
