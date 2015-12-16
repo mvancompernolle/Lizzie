@@ -76,8 +76,7 @@ public class ArrowMovementScript : MonoBehaviour {
                 if (currentRotation < 0) { currentRotation += 360; }
             }
             // move 
-            vel.x = Mathf.Cos(currentRotation+90 * Mathf.Deg2Rad) * speed;
-            vel.z = Mathf.Sin(currentRotation+90 * Mathf.Deg2Rad) * speed;
+            transform.rotation = Quaternion.Slerp(Quaternion.LookRotation(vel), Quaternion.LookRotation(posDiff), turnRate * Time.deltaTime);
             //Debug.Log("x: " + vel.x + " y: " + vel.z);
         }
 

@@ -104,17 +104,6 @@ public class ShootController : MonoBehaviour {
             bulletMovement.currentRotation = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg + 90;
             BulletController bulletController = newBullet.GetComponent<BulletController>();
             bulletController.Origin = lizzieController.rbody.GetComponent<Collider>();
-            /*
-            if (closestEnemy == null)
-            {
-                newBullet.GetComponent<Rigidbody>().AddForce((Vector3.Normalize(shootDirectionAngled) * bulletSpeed) * speedScalar + lizzieController.vel, ForceMode.Impulse);
-            }
-            else
-            {
-                newBullet.GetComponent<Rigidbody>().AddForce(
-                    (Vector3.Normalize(closestEnemy.GetComponent<Rigidbody>().transform.position - newBullet.transform.position).normalized * bulletSpeed) * speedScalar, ForceMode.Impulse);
-            }
-            */
 
             // cause the tower to move in the oposite direction
             lizzieController.applyHit(tipStrength * scaleVel, -normalized, 0.1f);
