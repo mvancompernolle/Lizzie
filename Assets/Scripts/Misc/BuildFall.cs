@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class TreeFall : MonoBehaviour
+public class BuildFall : MonoBehaviour
 {
-   // public float collapseAngle;
     public float maxCollapseSpeed = 0;
     public float collapseAcc = 0;
     public float maxBounceStrength;
@@ -16,11 +15,11 @@ public class TreeFall : MonoBehaviour
     private int numWobbles;
     private bool lightHit = false;
 
-    void OnTriggerEnter(Collider lizzie)
+    void OnCollisionEnter(Collision lizzie)
     {
         if (lizzie.gameObject.CompareTag("Player"))
         {
-            LizzieController Lizzie = lizzie.GetComponent<LizzieController>();
+            LizzieController Lizzie = lizzie.collider.GetComponent<LizzieController>();
             Vector3 direction = Vector3.Normalize(gameObject.transform.position - Lizzie.transform.position);
             direction.y = 0.0f;
             float hitStrength = Vector3.Magnitude(Lizzie.vel) / Lizzie.maxMovementSpeed;
@@ -32,7 +31,7 @@ public class TreeFall : MonoBehaviour
                     rotationAxis = Vector3.Cross(Vector3.up, direction);
                     collapseSpeed = maxCollapseSpeed * hitStrength;
                 }
-                else if(!lightHit)
+                else if (!lightHit)
                 {
                     lightHit = true;
                     wigglePos = true;
@@ -52,15 +51,15 @@ public class TreeFall : MonoBehaviour
     }
     void ApplyRotation()
     {
-        transform.parent.transform.rotation = Quaternion.identity;
-        transform.parent.transform.Rotate(rotationAxis, currentRotation, Space.World);
+        transform.rotation = Quaternion.identity;
+        transform.Rotate(rotationAxis, currentRotation, Space.World);
     }
 
     void FixedUpdate()
     {
         if (lightHit)
         {
-            if( numWobbles < 5)
+            if (numWobbles < 5)
             {
                 if (wigglePos == true)
                 {
@@ -90,7 +89,7 @@ public class TreeFall : MonoBehaviour
             else
             {
                 currentRotation -= wobbleSpeed * Time.deltaTime;
-                if ( Mathf.Abs(currentRotation) <= 0.5f)
+                if (Mathf.Abs(currentRotation) <= 0.5f)
                 {
                     currentRotation = 0.0f;
                     lightHit = false;
@@ -102,7 +101,7 @@ public class TreeFall : MonoBehaviour
         {
             collapseSpeed += collapseAcc * Time.deltaTime;
             currentRotation += collapseSpeed * Time.deltaTime;
-            if( currentRotation > 90)
+            if (currentRotation > 90)
             {
                 currentRotation = 90;
             }
