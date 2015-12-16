@@ -16,13 +16,14 @@ public class EnemyController : MonoBehaviour
     /* Setters */
 
     public void ai_ApplyHit(Vector3 force) { ai_Me.AddForce(force, ForceMode.Impulse); }
+    public float ai_GetVel() { return new Vector3(ai_Me.velocity.x, 0.0f, ai_Me.velocity.z).magnitude; }
 
     /* Getters */
 
     public Rigidbody ai_GetRBody() { return ai_Me; }
     public Vector3 ai_GetDir() { return (ai_Target.position - ai_Me.position).normalized; }
 
-    protected float ai_GetVel() { return new Vector3(ai_Me.velocity.x, 0.0f, ai_Me.velocity.z).magnitude; }
+    
     protected float ai_GetDistToTar() { return Vector3.Distance(ai_Me.transform.position, ai_Target.transform.position); } 
     protected float ai_GetAttackRange()
     {

@@ -34,7 +34,7 @@ public class TreeFall : MonoBehaviour {
                     rotationAxis = Vector3.Cross(Vector3.up, direction);
                     collapseSpeed = maxCollapseSpeed * hitStrength;
                 }
-                else if(!lightHit)
+                else if (!lightHit)
                 {
                     lightHit = true;
                     wigglePos = true;
@@ -51,7 +51,23 @@ public class TreeFall : MonoBehaviour {
                 Lizzie.applyHit(0.3f, randomDirection, 0.6f);
             }
         }
+        else if(lizzie.gameObject.CompareTag("Rammer"))
+        {
+            RamAI ram = lizzie.GetComponent<RamAI>();
+            Vector3 direction = Vector3.Normalize(gameObject.transform.position - ram.transform.position);
+            float hitStrength = ram.ai_GetVel() / ram.Speed;
+            if (!lightHit)
+            {
+                lightHit = true;
+                wigglePos = true;
+                numWobbles = 0;
+                //determine whether to start wiggling left or right
+                rotationAxis = Vector3.Cross(Vector3.up, direction);
+                collapseSpeed = maxCollapseSpeed * hitStrength;
+            }
+        }
     }
+
     void ApplyRotation()
     {
         transform.parent.transform.rotation = Quaternion.identity;
